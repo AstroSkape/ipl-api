@@ -48,13 +48,32 @@ try:
     @app.route('/add-player', methods=['GET' ,'POST'])
     def add_movie():
         if request.method == 'POST':
-            print(request.get_json)
-            data = request.form.to_dict()
+            data = request.json
             print(data)
-            #cur.execute("INSERT INTO player values(%s, %s, %s, %s, %s, %s)", (f"{data['player_id']}", f"{data[]}"))
-            return "got"
+            cur.execute("INSERT INTO player values(%s, %s, %s, %s, %s, %s)", (f"{data['player_id']}", f"{data['pname']}", f"{data['team_id']}", f"{data['total_runs']}", f"{data['total_wickets']}", f"{data['net_economy']}"))
+            con.commit()
+            return "done"
         else:
             return "error"
+
+    @app.route('/delete-sponsor', methods=['POST'])
+    def del_sponsor():
+        if request.method == 'POST':
+            data = request.json
+            cur.execute("DELETE FROM sponsors where sponsor = '"+data['sponsor']+"'")
+            con.commit()
+            return "done"
+        else:
+            return "dont get"
+
+    @app.route('/update-venue', methods=['PUT'])
+    def change_capacity():
+        if request.method == 'PUT':
+            cur.execute("UPDATE venue set capacity=capacity*2 where venue_id='V1'")
+            con.commit()
+            return "updated"
+        else:
+            return "put"
 
 except:
     print('Error')
