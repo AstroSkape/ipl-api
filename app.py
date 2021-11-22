@@ -30,9 +30,32 @@ try:
     def fetch_all_movies():
         cur.execute('SELECT * FROM player')
         rows = cur.fetchall()
+        #print(rows)
+
+        return jsonify(rows)
+
+    # GET: Fetch team details by team_id
+    @app.route('/<team_id>')
+    def fetch_by_id(team_id=None):
+        print(team_id)
+        cur.execute("SELECT * FROM team where team_id = '"+team_id+"'")
+        rows = cur.fetchall()
         print(rows)
 
         return jsonify(rows)
+
+    # POST: Add entry to players table
+    @app.route('/add-player', methods=['GET' ,'POST'])
+    def add_movie():
+        if request.method == 'POST':
+            print(request.get_json)
+            data = request.form.to_dict()
+            print(data)
+            #cur.execute("INSERT INTO player values(%s, %s, %s, %s, %s, %s)", (f"{data['player_id']}", f"{data[]}"))
+            return "got"
+        else:
+            return "error"
+
 except:
     print('Error')
 
