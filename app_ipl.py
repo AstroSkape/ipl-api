@@ -65,12 +65,14 @@ login(option, passw)
 page = st.sidebar.selectbox('Choose page', options=('read', 'delete', 'update'))
 with ref:
     if passw == '' or option == '':
-        st.subheader('please enter password and username')
+        st.warning('please enter password and username')
     else:
         try:
             if page == 'read':
-                st.header('Team Details ✈️ ')
+                st.header('Team Details 🏏 ')
                 team(option, passw)
+            if page == 'delete':
+                st.header('Remove player ')
         except psycopg2.errors.InFailedSqlTransaction as e:
             pass
         except psycopg2.OperationalError:
