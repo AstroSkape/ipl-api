@@ -34,71 +34,77 @@ def team(username, pw):
         con.close()
 
 def remove(username, pw):
-    con = psycopg2.connect(
-        host = 'localhost',
-        database = 'ipl',
-        user = 'postgres',
-        password = 'postgres'
-    )
-    cur = con.cursor()
-    
-    cur.execute("select column_name from information_schema.columns where table_schema = 'public' and table_name='sponsors'")
-    col = [row[0] for row in cur]
-    #venue = st.text_input("Venue id")
-    #tup = (df['venue_id'])
-    to_delete = st.text_input("Enter the name of the sponsor to be deleted")
-    click = st.button('Update', key=1)
-    show = st.button('Show Table')
-    cur.execute("select * from sponsors")
-    df = pd.DataFrame(cur.fetchall())
-    if(show):
-        df.columns = col
-        st.table(df)
-    if(click):
-        if(to_delete in df.values):
-            sql = "delete from sponsors where sponsor='"+to_delete+"'"
+    if(username != 'admin'):
+        st.warning("This user does not have permission to modify the relations")
+    else:
+        con = psycopg2.connect(
+            host = 'localhost',
+            database = 'ipl',
+            user = 'postgres',
+            password = 'postgres'
+        )
+        cur = con.cursor()
+        
+        cur.execute("select column_name from information_schema.columns where table_schema = 'public' and table_name='sponsors'")
+        col = [row[0] for row in cur]
+        #venue = st.text_input("Venue id")
+        #tup = (df['venue_id'])
+        to_delete = st.text_input("Enter the name of the sponsor to be deleted")
+        click = st.button('Update', key=1)
+        show = st.button('Show Table')
+        cur.execute("select * from sponsors")
+        df = pd.DataFrame(cur.fetchall())
+        if(show):
+            df.columns = col
+            st.table(df)
+        if(click):
+            if(to_delete in df.values):
+                sql = "delete from sponsors where sponsor='"+to_delete+"'"
+                print(sql)
+                cur.execute(sql)
+                con.commit()
+                print("Yes")
+            else:
+                st.warning('Entered sponsor does not exist')
+        cur.close()
+        con.close()
+
+def update(username, pw):
+    if(username != 'admin'):
+        st.warning("This user does not have permission to modify the relations")
+    else:
+        con = psycopg2.connect(
+            host = 'localhost',
+            database = 'ipl',
+            user = 'postgres',
+            password = 'postgres'
+        )
+        cur = con.cursor()
+        
+        cur.execute("select column_name from information_schema.columns where table_schema = 'public' and table_name='venue'")
+        col = [row[0] for row in cur]
+        #venue = st.text_input("Venue id")
+        #tup = (df['venue_id'])
+        venue = st.selectbox("Choose venue", options = ('V1','V2','V3','V4','V5','V6'))
+        val = st.text_input("Enter new capacity")
+        click = st.button('Update', key=1)
+        show = st.button('Show Table')
+        if(show):
+            cur.execute("select * from venue")
+            df = pd.DataFrame(cur.fetchall())
+            df.columns = col
+            st.table(df)
+        if(click):
+            print("here")
+            sql = "update venue set capacity="+val+" where venue_id='"+venue+"'"
+            #val = st.text_input('Enter new capacity', value='')
             print(sql)
             cur.execute(sql)
             con.commit()
+            #print(cur.fetchall())
             print("Yes")
-        else:
-            st.warning('Entered sponsor does not exist')
-    cur.close()
-    con.close()
-
-def update(username, pw):
-    con = psycopg2.connect(
-        host = 'localhost',
-        database = 'ipl',
-        user = 'postgres',
-        password = 'postgres'
-    )
-    cur = con.cursor()
-    
-    cur.execute("select column_name from information_schema.columns where table_schema = 'public' and table_name='venue'")
-    col = [row[0] for row in cur]
-    #venue = st.text_input("Venue id")
-    #tup = (df['venue_id'])
-    venue = st.selectbox("Choose venue", options = ('V1','V2','V3','V4','V5','V6'))
-    val = st.text_input("Enter new capacity")
-    click = st.button('Update', key=1)
-    show = st.button('Show Table')
-    if(show):
-        cur.execute("select * from venue")
-        df = pd.DataFrame(cur.fetchall())
-        df.columns = col
-        st.table(df)
-    if(click):
-        print("here")
-        sql = "update venue set capacity="+val+" where venue_id='"+venue+"'"
-        #val = st.text_input('Enter new capacity', value='')
-        print(sql)
-        cur.execute(sql)
-        con.commit()
-        #print(cur.fetchall())
-        print("Yes")
-    cur.close()
-    con.close()
+        cur.close()
+        con.close()
 
 
 def login(username, pw):
