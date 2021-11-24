@@ -15,9 +15,9 @@ def team(username, pw):
             password = pw
         )
         cur = con.cursor()
-        cur.execute("select * from information_schema.tables where table_schema = 'public';")
+        cur.execute("select table_name from information_schema.tables where table_schema = 'public';")
         df = cur.fetchall()
-        df = pd.DataFrame(df).drop(columns=[0,1,3,4,5,6,7,8,9,10,11])
+        df = pd.DataFrame(df)
         df.columns = ["tables"]
         print(tuple(df['tables']))
         #rows.rename(columns = {'2':'tables'}, inplace = True)
@@ -30,6 +30,21 @@ def team(username, pw):
         df = pd.DataFrame(cur.fetchall())
         df.columns = col
         st.table(df)
+        cur.close()
+        con.close()
+
+def remove(username, pw):
+    if(username!="" and pw!=""):
+        con = psycopg2.connect(
+            host = 'localhost',
+            database = 'ipl',
+            user = username,
+            password = pw
+        )
+        cur = con.cursor()
+        cur.execute("select * from information_schema.tables where table_schema = 'public';")
+        
+
         cur.close()
         con.close()
 
@@ -47,7 +62,6 @@ def login(username, pw):
             ROLE = username
             st.sidebar.info('\tlogged in as ' + ROLE)
             con.close()
-            st.balloons()
             return True
     except psycopg2.OperationalError as e:
         st.sidebar.warning('\tnot logged in')
@@ -72,7 +86,8 @@ with ref:
                 st.header('Team Details 🏏 ')
                 team(option, passw)
             if page == 'delete':
-                st.header('Remove player ')
+                st.header('Remove player')
+                remove(option, passw)
         except psycopg2.errors.InFailedSqlTransaction as e:
             pass
         except psycopg2.OperationalError:
