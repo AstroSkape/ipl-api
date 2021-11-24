@@ -106,6 +106,48 @@ def update(username, pw):
         cur.close()
         con.close()
 
+def simple_queries(username, pw):
+    con = psycopg2.connect(
+            host = 'localhost',
+            database = 'ipl',
+            user = 'postgres',
+            password = 'postgres'
+        )
+    cur = con.cursor()
+    queries = {'Leaderboard standings':'select team_id, number_of_wins*2 AS points FROM leaderboard order by points desc;',
+                'Find number of losses':'select team_id, matches_played - number_of_wins AS number_of_losses FROM leaderboard;',
+                'Team with most championships':'select team_name from team where championships_won = (select max(championships_won) from team);',
+                'Players with more than 1000 runs and 2 wickets':'select player_id, pname from player where total_runs>1000 and total_wickets>2;',
+                'Sponsors of team 1A':"select team_ID,sponsor from sponsors where Team_ID = '1A';"}
+    option = st.selectbox("Choose query", options = queries)
+    cur.execute(queries[option])
+    df = pd.DataFrame(cur.fetchall())
+    st.table(df)
+    cur.close()
+    con.close()
+
+
+def complex_queries(username, pw):
+    con = psycopg2.connect(
+            host = 'localhost',
+            database = 'ipl',
+            user = 'postgres',
+            password = 'postgres'
+        )
+    cur = con.cursor()
+    queries = {'Players who played in match 3 but not match 1':"select pname from player where player_id in ((select player_ as player_id from players_on_the_field where match_id = '3') except (select player_ as player_id from players_on_the_field where match_id = '1'));",
+                'Support staff of teams that played in match 1':"select staff_id, role from support_staff, matches where team_id=matches.winning_team and match_id='1' union select staff_id, role from support_staff, matches where team_id=matches.losing_team and match_id='1';",
+                'Find the matches played between teams 1A and 1B in venue V3':"(select M_ID from played_in where V_ID ='V3') INTERSECT (select match_id from matches where (winning_team = '1A' and losing_team = '1B') or (winning_team ='1B' and losing_team = '1A')) ;",
+                'Players from teams 2A and 3B who have scored more than 500 runs':"(select pname from player where team_ID = '2A' and total_runs > 500) UNION (select pname from player where team_ID = '3B' and total_runs > 500);",
+                'Teams which have more than 1 win':"select team_name, team_id from team natural join (select team_id from leaderboard where number_of_wins > 1) as t;",
+                'Players on the field of the winning team of match 1':"select pname from player inner join matches on winning_team=team_id and match_id='1' except select distinct(pname) from player as p inner join matches as m on winning_team=team_id and match_id ='1'  inner join players_on_the_field as potf on m.match_id=potf.match_id and potf.player_=p.player_id;"}
+    option = st.selectbox("Choose query", options = queries)
+    cur.execute(queries[option])
+    df = pd.DataFrame(cur.fetchall())
+    st.table(df)
+    cur.close()
+    con.close()
+
 
 def login(username, pw):
     '''Login using role new_user'''
@@ -134,7 +176,7 @@ with st.sidebar.form(key='loginform', clear_on_submit=False):
     st.sidebar.button('sign in', key='login')
 ref = st.container()
 login(option, passw)
-page = st.sidebar.selectbox('Choose page', options=('read', 'delete', 'update'))
+page = st.sidebar.selectbox('Choose page', options=('read', 'delete', 'update','simple queries','complex queries'))
 with ref:
     if passw == '' or option == '':
         st.warning('please enter password and username')
@@ -149,6 +191,12 @@ with ref:
             elif page == 'update':
                 st.header('Update Venue')
                 update(option, passw)
+            elif page == 'simple queries':
+                st.header('Simple queries')
+                simple_queries(option,passw)
+            elif page == 'complex queries':
+                st.header('Complex queries')
+                complex_queries(option,passw)
         except psycopg2.errors.InFailedSqlTransaction as e:
             print(e)
         except psycopg2.OperationalError as e:
