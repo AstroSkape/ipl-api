@@ -98,11 +98,11 @@ def update(username, pw):
             print("here")
             sql = "update venue set capacity="+val+" where venue_id='"+venue+"'"
             #val = st.text_input('Enter new capacity', value='')
-            print(sql)
+            #print(sql)
             cur.execute(sql)
             con.commit()
             #print(cur.fetchall())
-            print("Yes")
+            #print("Yes")
         cur.close()
         con.close()
 
@@ -122,6 +122,17 @@ def simple_queries(username, pw):
     option = st.selectbox("Choose query", options = queries)
     cur.execute(queries[option])
     df = pd.DataFrame(cur.fetchall())
+    if(option == 'Leaderboard standings'):
+        col = ['team_ID', 'points']
+    elif(option == 'Find number of losses'):
+        col = ['team_ID', 'no_of_losses']
+    elif(option == 'Team with most championships'):
+        col = ['Most championships']
+    elif(option == 'Players with more than 1000 runs and 2 wickets'):
+        col = ['player_ID', 'player_name']
+    elif(option == 'Sponsors of team 1A'):
+        col = ['team_ID', 'sponsor']
+    df.columns = col
     st.table(df)
     cur.close()
     con.close()
@@ -144,6 +155,19 @@ def complex_queries(username, pw):
     option = st.selectbox("Choose query", options = queries)
     cur.execute(queries[option])
     df = pd.DataFrame(cur.fetchall())
+    if(option == 'Players who played in match 3 but not match 1'):
+        col = ['player_name']
+    elif(option == 'Support staff of teams that played in match 1'):
+        col = ['staff_ID', 'role']
+    elif(option == 'Players from teams 2A and 3B who have scored more than 500 runs'):
+        col = ['player_name']
+    elif(option == 'Find the matches played between teams 1A and 1B in venue V3'):
+        col = ['Match_ID']
+    elif(option == 'Teams which have more than 1 win'):
+        col = ['team_name','team_ID']
+    elif(option == 'Players on the field of the winning team of match 1'):
+        col = ['player_name']
+    df.columns = col
     st.table(df)
     cur.close()
     con.close()
