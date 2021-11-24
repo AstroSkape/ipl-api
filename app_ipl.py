@@ -48,6 +48,40 @@ def remove(username, pw):
         cur.close()
         con.close()
 
+def update(username, pw):
+    con = psycopg2.connect(
+        host = 'localhost',
+        database = 'ipl',
+        user = 'postgres',
+        password = 'root'
+    )
+    cur = con.cursor()
+    
+    cur.execute("select column_name from information_schema.columns where table_schema = 'public' and table_name='venue'")
+    col = [row[0] for row in cur]
+    #venue = st.text_input("Venue id")
+    #tup = (df['venue_id'])
+    venue = st.selectbox("Choose venue", options = ('V1','V2','V3','V4','V5','V6'))
+    val = st.text_input("Enter new capacity")
+    click = st.button('Update', key=1)
+    show = st.button('Show Table')
+    if(show):
+        cur.execute("select * from venue")
+        df = pd.DataFrame(cur.fetchall())
+        df.columns = col
+        st.table(df)
+    if(click):
+        print("here")
+        sql = "update venue set capacity="+val+" where venue_id='"+venue+"'"
+        #val = st.text_input('Enter new capacity', value='')
+        print(sql)
+        cur.execute(sql)
+        con.commit()
+        #print(cur.fetchall())
+        print("Yes")
+    cur.close()
+    con.close()
+
 
 def login(username, pw):
     '''Login using role new_user'''
@@ -85,12 +119,15 @@ with ref:
             if page == 'read':
                 st.header('Team Details 🏏 ')
                 team(option, passw)
-            if page == 'delete':
+            elif page == 'delete':
                 st.header('Remove player')
                 remove(option, passw)
+            elif page == 'update':
+                st.header('Update Venue')
+                update(option, passw)
         except psycopg2.errors.InFailedSqlTransaction as e:
-            pass
-        except psycopg2.OperationalError:
-            pass
-        except psycopg2.errors.InsufficientPrivilege:
-            pass
+            print(e)
+        except psycopg2.OperationalError as e:
+            print(e)
+        except psycopg2.errors.InsufficientPrivilege as e:
+            print(e)
