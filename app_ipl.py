@@ -19,12 +19,12 @@ def team(username, pw):
         df = cur.fetchall()
         df = pd.DataFrame(df)
         df.columns = ["tables"]
-        print(tuple(df['tables']))
+        #print(tuple(df['tables']))
         #rows.rename(columns = {'2':'tables'}, inplace = True)
         option = st.selectbox("Choose table", options = tuple(df['tables']))
         cur.execute("select column_name from information_schema.columns where table_schema = 'public' and table_name='"+option+"'")
         col = [row[0] for row in cur]
-        print(col)
+        #print(col)
         #column_names = [row[0] for row in cur]
         cur.execute("Select * from "+option)
         df = pd.DataFrame(cur.fetchall())
@@ -34,26 +34,44 @@ def team(username, pw):
         con.close()
 
 def remove(username, pw):
-    if(username!="" and pw!=""):
-        con = psycopg2.connect(
-            host = 'localhost',
-            database = 'ipl',
-            user = username,
-            password = pw
-        )
-        cur = con.cursor()
-        cur.execute("select * from information_schema.tables where table_schema = 'public';")
-        
-
-        cur.close()
-        con.close()
+    con = psycopg2.connect(
+        host = 'localhost',
+        database = 'ipl',
+        user = 'postgres',
+        password = 'postgres'
+    )
+    cur = con.cursor()
+    
+    cur.execute("select column_name from information_schema.columns where table_schema = 'public' and table_name='sponsors'")
+    col = [row[0] for row in cur]
+    #venue = st.text_input("Venue id")
+    #tup = (df['venue_id'])
+    to_delete = st.text_input("Enter the name of the sponsor to be deleted")
+    click = st.button('Update', key=1)
+    show = st.button('Show Table')
+    cur.execute("select * from sponsors")
+    df = pd.DataFrame(cur.fetchall())
+    if(show):
+        df.columns = col
+        st.table(df)
+    if(click):
+        if(to_delete in df.values):
+            sql = "delete from sponsors where sponsor='"+to_delete+"'"
+            print(sql)
+            cur.execute(sql)
+            con.commit()
+            print("Yes")
+        else:
+            st.warning('Entered sponsor does not exist')
+    cur.close()
+    con.close()
 
 def update(username, pw):
     con = psycopg2.connect(
         host = 'localhost',
         database = 'ipl',
         user = 'postgres',
-        password = 'root'
+        password = 'postgres'
     )
     cur = con.cursor()
     
@@ -120,7 +138,7 @@ with ref:
                 st.header('Team Details 🏏 ')
                 team(option, passw)
             elif page == 'delete':
-                st.header('Remove player')
+                st.header('Remove sponsor')
                 remove(option, passw)
             elif page == 'update':
                 st.header('Update Venue')
